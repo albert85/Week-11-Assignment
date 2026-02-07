@@ -9,7 +9,7 @@
       apt:
         update_cache: yes
         cache_valid_time: 3600
-      when: ansible_os_family == "Debian"
+      when: ansible_facts['os_family'] == "Debian"
 
     - name: Install Nginx on Target Node
       package:
@@ -19,12 +19,12 @@
     - name: Set nginx root path for Debian/Ubuntu
       set_fact:
         nginx_root: /var/www/html
-      when: ansible_os_family == "Debian"
+      when: ansible_facts['os_family'] == "Debian"
 
     - name: Set nginx root path for RedHat/Amazon Linux
       set_fact:
         nginx_root: /usr/share/nginx/html
-      when: ansible_os_family == "RedHat"
+      when: ansible_facts['os_family'] == "RedHat"
 
     - name: Start and Enable Nginx Service
       service:
