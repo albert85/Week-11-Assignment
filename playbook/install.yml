@@ -1,48 +1,57 @@
 ---
-- name: Install and Configure Nginx
+- name: Install Nginx
   hosts: web
   become: true
   gather_facts: true
 
-  vars:
-    nginx_web_root:
-      Debian: /var/www/html
-      RedHat: /usr/share/nginx/html
-
   tasks:
-    - name: Install Nginx
+    - name: Update package cache (Ubuntu/Debian)
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Install Nginx on Target Node
       package:
         name: nginx
         state: present
 
-    - name: Start and enable Nginx
+    - name: Set nginx root path for Debian/Ubuntu
+      set_fact:
+        nginx_root: /var/www/html
+      when: ansible_os_family == "Debian"
+
+    - name: Set nginx root path for RedHat/Amazon Linux
+      set_fact:
+        nginx_root: /usr/share/nginx/html
+      when: ansible_os_family == "RedHat"
+
+    - name: Start and Enable Nginx Service
       service:
         name: nginx
         state: started
         enabled: yes
 
     - name: Create assets directory
-      file:
-        path: "{{ nginx_web_root[ansible_facts['os_family']] }}/assets"
+      ansible.builtin.file:
+        path: "{{ nginx_root }}/assets"
         state: directory
-        owner: root
-        group: root
-        mode: "0755"
+        mode: '0755'
 
-    - name: Copy index.html
-      template:
+    - name: Copy index file 
+      ansible.builtin.template:
         src: index.html.j2
-        dest: "{{ nginx_web_root[ansible_facts['os_family']] }}/index.html"
-        mode: "0644"
+        dest: "{{ nginx_root }}/index.html"
+        mode: '0644'
 
-    - name: Copy JS file
-      copy:
-        src: nginx-artefacts/assets/app.js
-        dest: "{{ nginx_web_root[ansible_facts['os_family']] }}/assets/app.js"
-        mode: "0644"
+    - name: Copy js file 
+      ansible.builtin.copy:
+        src: ../nginx-artefacts/assets/app.js 
+        dest: "{{ nginx_root }}/assets/app.js"
+        mode: '0644'
 
-    - name: Copy CSS file
-      copy:
-        src: nginx-artefacts/assets/styles.css
-        dest: "{{ nginx_web_root[ansible_facts['os_family']] }}/assets/styles.css"
-        mode: "0644"
+    - name: Copy css file
+      ansible.builtin.copy:
+        src: ../nginx-artefacts/assets/styles.css 
+        dest: "{{ nginx_root }}/assets/styles.css"
+        mode: '0644'
