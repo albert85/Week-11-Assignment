@@ -1,38 +1,48 @@
 ---
-- name: Install Nginx
+- name: Install and Configure Nginx
   hosts: web
   become: true
   gather_facts: true
 
+  vars:
+    nginx_web_root:
+      Debian: /var/www/html
+      RedHat: /usr/share/nginx/html
+
   tasks:
-    - name: Install Nginx on Target Node
+    - name: Install Nginx
       package:
         name: nginx
         state: present
 
-    - name: Start Service
+    - name: Start and enable Nginx
       service:
         name: nginx
         state: started
         enabled: yes
 
-    - name: create assets directory
-      ansible.builtin.file:
-        path: /usr/share/nginx/html/assets
+    - name: Create assets directory
+      file:
+        path: "{{ nginx_web_root[ansible_os_family] }}/assets"
         state: directory
+        owner: root
+        group: root
+        mode: "0755"
 
-    - name: copy index file 
-      ansible.builtin.template:
+    - name: Copy index.html
+      template:
         src: index.html.j2
-        dest: /usr/share/nginx/html/index.html
+        dest: "{{ nginx_web_root[ansible_os_family] }}/index.html"
+        mode: "0644"
 
-    - name: copy js file 
-      ansible.builtin.copy:
-        src: ../nginx-artefacts/assets/app.js 
-        dest: /usr/share/nginx/html/assets/app.js
+    - name: Copy JS file
+      copy:
+        src: nginx-artefacts/assets/app.js
+        dest: "{{ nginx_web_root[ansible_os_family] }}/assets/app.js"
+        mode: "0644"
 
-    - name: copy css file
-      ansible.builtin.copy:
-        src: ../nginx-artefacts/assets/styles.css 
-        dest: /usr/share/nginx/html/assets/styles.css
-
+    - name: Copy CSS file
+      copy:
+        src: nginx-artefacts/assets/styles.css
+        dest: "{{ nginx_web_root[ansible_os_family] }}/assets/styles.css"
+        mode: "0644"
