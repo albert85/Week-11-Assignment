@@ -23,7 +23,7 @@
 
     - name: Create assets directory
       file:
-        path: "{{ nginx_web_root[ansible_os_family] }}/assets"
+        path: "{{ nginx_web_root[ansible_facts['os_family']] }}/assets"
         state: directory
         owner: root
         group: root
@@ -32,17 +32,17 @@
     - name: Copy index.html
       template:
         src: index.html.j2
-        dest: "{{ nginx_web_root[ansible_os_family] }}/index.html"
+        dest: "{{ nginx_web_root[ansible_facts['os_family']] }}/index.html"
         mode: "0644"
 
     - name: Copy JS file
       copy:
         src: nginx-artefacts/assets/app.js
-        dest: "{{ nginx_web_root[ansible_os_family] }}/assets/app.js"
+        dest: "{{ nginx_web_root[ansible_facts['os_family']] }}/assets/app.js"
         mode: "0644"
 
     - name: Copy CSS file
       copy:
         src: nginx-artefacts/assets/styles.css
-        dest: "{{ nginx_web_root[ansible_os_family] }}/assets/styles.css"
+        dest: "{{ nginx_web_root[ansible_facts['os_family']] }}/assets/styles.css"
         mode: "0644"
